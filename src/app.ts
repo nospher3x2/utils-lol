@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 import https from 'https';
 
 const connector = new LCUConnector();
+var running = false;
 
 const animatedTitle = async(title: string)=> {
     const chars = title.split('');
@@ -21,6 +22,8 @@ animatedTitle(`UTILS LOL @ryannospherys `);
 console.log(`\x1b[36mEsperando o lol abrir :p\n`);
 
 const run = async(credentials: ICredentials)=> {
+    if(!running) return;
+
     const api = new LCURequest(credentials);
 
     const phases = {
@@ -33,10 +36,11 @@ const run = async(credentials: ICredentials)=> {
 }
 
 connector.on('connect', async(credentials: ICredentials)=> {
+    running = true;
     setInterval(async()=> await run(credentials), 8000);
 });
 
-connector.on('disconnect', ()=> process.kill);
+connector.on('disconnect', ()=> running = false);
 
 connector.start();
 
