@@ -18,7 +18,7 @@ const animatedTitle = async(title: string)=> {
     })
 }
 
-animatedTitle(`UTILS LOL @ryannospherys `);
+animatedTitle(`UTILS LOL @ryannospherys `); 
 console.log(`\x1b[36mEsperando o lol abrir :p\n`);
 
 const run = async(credentials: ICredentials)=> {
@@ -27,8 +27,10 @@ const run = async(credentials: ICredentials)=> {
     const api = new LCURequest(credentials);
 
     const phases = {
+        "Lobby": async()=> await api.searchMatchmaking(),
         "ReadyCheck": async()=> await api.acceptMatchmaking(),
-        "ChampSelect": async()=> await api.purchaseAramBoost()
+        "ChampSelect": async()=> await api.purchaseAramBoost(),
+        "EndOfGame": async()=> await api.playAgain()
     }
 
     const phase = await api.getGameflowPhase();
@@ -36,6 +38,7 @@ const run = async(credentials: ICredentials)=> {
 }
 
 connector.on('connect', async(credentials: ICredentials)=> {
+    console.log('Eba, lol tá aberto');
     running = true;
     setInterval(async()=> await run(credentials), 8000);
 });
@@ -66,18 +69,30 @@ class LCURequest {
 
     public async getGameflowPhase() {        
         return await this.api.get(`lol-gameflow/v1/gameflow-phase`).then((response)=> response.data)
-        .catch((error)=> console.log(`[ERROR] » ${error.response.data.message}`));
+        .catch((error)=> console.log(`[ERROR] » ${error.response ? error.response.data.message : 'Client fechado ?'}`));
+    }
+
+    public async searchMatchmaking() {
+        return await this.api.post(`lol-lobby/v2/lobby/matchmaking/search`)
+        .then(()=> console.log(`entrando na fila baiano`))
+        .catch(()=> undefined)
     }
 
     public async acceptMatchmaking() {
         return await this.api.post(`lol-matchmaking/v1/ready-check/accept`)
         .then(()=> console.log(`pronto amigo você pode intar com sua skinzinha`))
-        .catch((error)=> console.log(`[ERROR] » ${error.response.data.message}`))
+        .catch(()=> undefined)
     }
 
     public async purchaseAramBoost() {
         return await this.api.post(`lol-champ-select/v1/team-boost/purchase`)
         .then(()=> console.log(`toma skin free teu filha da puta pobre`))
+        .catch(()=> undefined)
+    }
+
+    public async playAgain() {
+        return await this.api.post(`/lol-lobby/v2/play-again`)
+        .then(()=> console.log('la vamos nois intar dnv no aram pqp'))
         .catch(()=> undefined)
     }
 }
